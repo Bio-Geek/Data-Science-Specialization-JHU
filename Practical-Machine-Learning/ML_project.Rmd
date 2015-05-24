@@ -1,0 +1,146 @@
+---
+title: "Predicting the quality of a dumbbell exercise using recordings from wearable sensor devices."
+output: html_document
+date: "05-23-2015"
+---
+### Summary:
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. One of the ways these devices could be useful is to monitor correctness of technique of physical exercises. In this project we used WLE dataset [1], which was produced by recording the data from accelerometers on the belt, forearm, arm, and dumbbell. The participants were asked to perform dumbbell lifts (Biceps curls) correctly and incorrectly in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+The full description of the data is available at: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+In this project we have used random forests model to predict the 5 classes of  the exercise correctness/incorrectness using recordings from accelerometers provided by WLE dataset. Estimated accuracy of our model is about 99% using out-of-bag estimate, as well as using a validation dataset. On the final testing set of 20 observations our model has achieved 100% accuracy.
+
+Note: The following project is fully reproducible with all the required code provided, however, since training of the random forests model took a rather long time, we run the code and saved the resulting model. During the conversion of document the execution of code for training the model was suppressed and the saved model was loaded instead. In addition, since the size of the dataset is rather large, the execution of functions such as str() and summary() were suppressed during document conversion. 
+
+#### Loading and reading data.
+```{r cache=TRUE}
+trainingURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testingURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+raw_data <- read.csv(trainingURL, na.strings=c("NA",""),
+                     stringsAsFactors = FALSE, header=TRUE)
+testing <- read.csv(testingURL, na.strings=c("NA",""),
+                    stringsAsFactors = FALSE, header=TRUE)
+```
+
+Loading packages (caret and randomForest).
+```{r message=FALSE}
+library(caret)
+library(randomForest)
+```
+
+#### Exploring the data.
+```{r cache=TRUE}
+dim(raw_data)
+```
+```{r cache=TRUE, eval=FALSE}
+names(raw_data)
+str(raw_data)
+```
+
+We found that many columns contain missing values. Therefore, we calculated the proportions of NAs per column.
+```{r cache=TRUE}
+unique(colMeans(is.na(raw_data)))
+```
+
+We observed that there are two types of columns: with no missing values and with about 98% of missing values. Since the columns with 98% of missing data wouldn't have significant predictive value, we decided to remove them.
+
+#### Cleaning the data.
+```{r cache=TRUE}
+clean_data <- raw_data[, colMeans(is.na(raw_data)) < 0.97]
+dim(clean_data) # 60 columns with no missing data remained.
+```
+
+We have also removed columns such as user id, name, and timestamps, because they are not relevant for prediction.
+```{r cache=TRUE}
+columns_to_remove <- c("X", "user_name", "raw_timestamp_part_1",
+                        "raw_timestamp_part_2", "cvtd_timestamp",
+                        "new_window", "num_window")
+
+clean_data <- clean_data[ , !names(clean_data) %in% columns_to_remove]
+dim(clean_data)
+```
+
+Next, since this is a classification problem, we converted the dependent variable into factor.
+```{r cache=TRUE}
+clean_data$classe <- as.factor(clean_data$classe)
+
+```
+```{r cache=TRUE, eval=FALSE}
+str(clean_data)
+summary(clean_data)
+```
+Analyzing the summary of obtained data we concluded that the obtained dataset is suitable to be used for prediction. We noticed that data in some of the columns was skewed, however, since we are using random forests, the performance of which is not affected significantly by skewness, the data transformation was not necessary.
+
+#### Creating a prediction model.
+We have decided to use random forests model because it usually has a good performance for classification problems and interpretability of the model is not very important in this project.
+
+First, we separated our data into training and validation datasets with 70% of the data in the training dataset and remaining 30% in validation dataset.
+```{r cache=TRUE}
+set.seed(05-23-2015)
+inTrain <- createDataPartition(clean_data$classe, p=0.7, list=FALSE)
+training <- clean_data[inTrain,]
+validation <- clean_data[-inTrain,]
+dim(training); dim(validation)
+```
+
+Next, we have built a random forests model using 10-fold cross-validation for parameter tuning. 
+```{r eval=FALSE}
+set.seed(05-23-2015)
+rf_model <- train(classe ~ ., data=training, method="rf",
+                  trControl=trainControl(method="cv", number=10))
+
+saveRDS(rf_model, "rf_model_cv10_train_05_23_15.rds")
+```
+
+```{r cache=TRUE}
+rf_model <- readRDS("rf_model_cv10_train_05_23_15.rds")
+```
+
+The following model was produced:
+```{r cache=TRUE}
+rf_model
+print(rf_model$finalModel)
+```
+We found that Out-Of-Bag (OOB) estimate of error rate is 0.67% with accuracy estimate of about 99%. Therefore, we expected that out of sample error would be approximately 1%, (although on a new set of data it can be expected to be higher).
+
+Next, we tested our model using the validation dataset.
+```{r cache=TRUE}
+pred <- predict(rf_model, validation)
+
+confusionMatrix(pred, validation$classe)
+```
+
+We found that the accuracy of the model on validation set is about 99% that is consistent with out-of-bag accuracy estimate. This confirms that our model is expected to have a high accuracy.
+
+#### Prediction on the final test dataset.
+Lastly, we used our model to make prediction on the test dataset.
+```{r cache=TRUE}
+answers <- predict(rf_model, testing)
+summary(answers)
+```
+
+The following function was used to convert the predictions to a specified submission format.
+```{r cache=TRUE, eval=FALSE}
+pml_write_files = function(x){
+    n = length(x)
+    for(i in 1:n){
+        filename = paste0("problem_id_",i,".txt")
+        write.table(x[i], file=filename, quote=FALSE, row.names=FALSE,
+                    col.names=FALSE)
+    }
+}
+```
+```{r eval=FALSE}
+answers <- as.character(answers)
+pml_write_files(answers)
+```
+Using our model we achieved 100% accuracy on the final test dataset of 20 observations.
+
+***
+
+The analysis in this project was performed using Windows 7 (64 bit), R version 3.2.0, RStudio version 0.98.1103, caret version 6.0-47, and randomForest version 4.6-10.
+
+#### References:
+1) Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+***
