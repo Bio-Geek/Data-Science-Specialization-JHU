@@ -1,0 +1,167 @@
+The codebook to accompany “MyTidyData.txt” dataset produced by “run_analysis.R” script.
+-----------------------------------------------------------------------------------------
+
+This Data Set is produced from an original Data Set “Human Activity Recognition Using Smartphones Data Set (1).”
+
+Feature Selection 
+=================
+The features in this dataset are selected 79 features from the original “Human Activity Recognition Using Smartphones Data Set”. 
+Only the features describing means and standard deviation were selected. 
+
+The current data set contains 180 observations (30 subjects, each performing 6 activities) and 81 variables.
+To obtain the values for observations, the means of original observations for each subject and each activity 
+across 79 features were calculated. 
+
+Note that the features in the original dataset were normalized and bounded within [-1,1], 
+therefore the values for observation in current datasets are also bounded within [-1,1]. 
+
+The current data set was produced in accordance with “tidy data” principles (2), in particular: 
+(i) each variable forms a column, (ii) each observation forms a row.
+
+The variables names from the original dataset were modified for current dataset to produce descriptive names 
+containing only legal characters which can be read by R.
+
+The variables in the original data set came from the measurements of accelerometer and gyroscope 3-axial raw signals 
+tAcc-XYZ and tGyro-XYZ signals on Samsung smartphones (3).
+These signals were used to estimate variables of the feature vector for each pattern:  
+'-XYZ' is used to denote 3-axial signals in the X, Y and Z directions:
+
+
+tBodyAcc-XYZ
+tGravityAcc-XYZ
+tBodyAccJerk-XYZ
+tBodyGyro-XYZ
+tBodyGyroJerk-XYZ
+tBodyAccMag
+tGravityAccMag
+tBodyAccJerkMag
+tBodyGyroMag
+tBodyGyroJerkMag
+fBodyAcc-XYZ
+fBodyAccJerk-XYZ
+fBodyGyro-XYZ
+fBodyAccMag
+fBodyAccJerkMag
+fBodyGyroMag
+fBodyGyroJerkMag
+
+The set of variables that were estimated from these signals and which were selected for current dataset are: 
+
+    mean(): Mean value
+    std(): Standard deviation
+    meanFreq(): Weighted average of the frequency components to obtain a mean frequency
+
+The full variable names are produced by adding string suffixes ‘mean’, ‘std’, and ‘meanFreq’ and 
+'X', 'Y', and 'Z' (to denote directions) to each signal measurement name.
+
+In the descriptive names of current dataset the following abbreviations are used:
+	t – time,  f – frequency, Acc – accelerometer measurement, Gyro – gyroscope measurement, Mag – magnitude.
+
+
+THE VARIABLES IN CURRENT DATASET ARE:
+
+[1] "subject", 30 possible values ranging from 1 to 30,
+     where each number represent a single subject.                   
+ 
+[2] "activity", represent 6 activities performed, with 6 possible values:
+        walking
+        walkingUpstairs 
+        walkingDownstairs
+        sitting
+        standing
+        laying
+
+The following 79 variables represent averages for each subject and each activity of
+corresponding normalized measurements as described above. 
+Numerical values in range [-1, 1].
+               
+ [3] "tBodyAccmeanX"           
+ [4] "tBodyAccmeanY"           
+ [5] "tBodyAccmeanZ"           
+ [6] "tBodyAccstdX"            
+ [7] "tBodyAccstdY"            
+ [8] "tBodyAccstdZ"            
+ [9] "tGravityAccmeanX"        
+[10] "tGravityAccmeanY"        
+[11] "tGravityAccmeanZ"        
+[12] "tGravityAccstdX"         
+[13] "tGravityAccstdY"         
+[14] "tGravityAccstdZ"         
+[15] "tBodyAccJerkmeanX"       
+[16] "tBodyAccJerkmeanY"       
+[17] "tBodyAccJerkmeanZ"       
+[18] "tBodyAccJerkstdX"        
+[19] "tBodyAccJerkstdY"        
+[20] "tBodyAccJerkstdZ"        
+[21] "tBodyGyromeanX"          
+[22] "tBodyGyromeanY"          
+[23] "tBodyGyromeanZ"          
+[24] "tBodyGyrostdX"           
+[25] "tBodyGyrostdY"           
+[26] "tBodyGyrostdZ"           
+[27] "tBodyGyroJerkmeanX"      
+[28] "tBodyGyroJerkmeanY"      
+[29] "tBodyGyroJerkmeanZ"      
+[30] "tBodyGyroJerkstdX"       
+[31] "tBodyGyroJerkstdY"       
+[32] "tBodyGyroJerkstdZ"       
+[33] "tBodyAccMagmean"         
+[34] "tBodyAccMagstd"          
+[35] "tGravityAccMagmean"      
+[36] "tGravityAccMagstd"       
+[37] "tBodyAccJerkMagmean"     
+[38] "tBodyAccJerkMagstd"      
+[39] "tBodyGyroMagmean"        
+[40] "tBodyGyroMagstd"         
+[41] "tBodyGyroJerkMagmean"    
+[42] "tBodyGyroJerkMagstd"     
+[43] "fBodyAccmeanX"           
+[44] "fBodyAccmeanY"           
+[45] "fBodyAccmeanZ"           
+[46] "fBodyAccstdX"            
+[47] "fBodyAccstdY"            
+[48] "fBodyAccstdZ"            
+[49] "fBodyAccmeanFreqX"       
+[50] "fBodyAccmeanFreqY"       
+[51] "fBodyAccmeanFreqZ"       
+[52] "fBodyAccJerkmeanX"       
+[53] "fBodyAccJerkmeanY"       
+[54] "fBodyAccJerkmeanZ"       
+[55] "fBodyAccJerkstdX"        
+[56] "fBodyAccJerkstdY"        
+[57] "fBodyAccJerkstdZ"        
+[58] "fBodyAccJerkmeanFreqX"   
+[59] "fBodyAccJerkmeanFreqY"   
+[60] "fBodyAccJerkmeanFreqZ"   
+[61] "fBodyGyromeanX"          
+[62] "fBodyGyromeanY"          
+[63] "fBodyGyromeanZ"          
+[64] "fBodyGyrostdX"           
+[65] "fBodyGyrostdY"           
+[66] "fBodyGyrostdZ"           
+[67] "fBodyGyromeanFreqX"      
+[68] "fBodyGyromeanFreqY"      
+[69] "fBodyGyromeanFreqZ"      
+[70] "fBodyAccMagmean"         
+[71] "fBodyAccMagstd"          
+[72] "fBodyAccMagmeanFreq"     
+[73] "fBodyAccJerkMagmean"     
+[74] "fBodyAccJerkMagstd"      
+[75] "fBodyAccJerkMagmeanFreq" 
+[76] "fBodyGyroMagmean"        
+[77] "fBodyGyroMagstd"         
+[78] "fBodyGyroMagmeanFreq"    
+[79] "fBodyGyroJerkMagmean"    
+[80] "fBodyGyroJerkMagstd"     
+[81] "fBodyGyroJerkMagmeanFreq"
+
+
+References:
+(1) Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. 
+    Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. 
+    International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012.
+(2) Tidy Data” by Hadley Wickham, http://vita.had.co.nz/papers/tidy-data.pdf
+(3) http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
+
+
+The example of the obtained tidy data set is attached in the pdf version of the codebook.
