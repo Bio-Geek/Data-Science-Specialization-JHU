@@ -1,0 +1,203 @@
+---
+title: The Weather Events that have Highest Impact on Population Health and Economics in USA.
+author: "Maxim Dorovkov"
+date: "06-25-2015"
+output:
+  html_document:
+    fig_caption: yes
+
+---
+### Synopsis.
+This project uses the data from U.S. National Oceanic and Atmospheric 
+Administration's (NOAA) Storm Database collected in USA over years 1950-2011, 
+which provide information about effects of different weather events 
+on human fatalities and injuries as well as property damages and crop damages 
+caused by these events [1, 2]. 
+We performed a basic exploratory analysis of this data. In particular the
+project attempted to answer the following questions: (i) which types of events 
+were most harmful with respect to population health? (ii) which types of events 
+have the greatest economic consequences?  
+Here we found that, in the US during years 1996-2011, tornados, heat, and floods 
+were the most harmful events affecting public health. We also found that floods,
+hurricanes, and storm surges had the biggest negative economic impact.
+
+## Data Processing.
+
+The data were obtained from NOAA Storm Database as a files compressed with bz2 [3].
+
+Loading packages which we will use for analysis.
+```{r message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+Reading raw data:
+```{r cache=TRUE}
+raw_data <- read.csv("storm_data.csv.bz2", na.strings = c("NA",""))
+```
+  
+```{r cache=TRUE}
+dim(raw_data)
+```
+
+There are 902297 rows and 37 columns in this dataset.   
+The dataset contains following variables:
+  
+```{r cache=TRUE}
+names(raw_data)
+```
+  
+Subseting the data to obtain data required for our analysis according to NOAA coodebook [2]:
+```{r cache=TRUE}
+data <- subset(raw_data, select = c("BGN_DATE","EVTYPE", "INJURIES", 
+                                    "FATALITIES", "CROPDMG", "CROPDMGEXP",
+                                    "PROPDMG", "PROPDMGEXP"))
+
+```
+  
+#### Exploring the obtained dataset.
+```{r cache=TRUE}
+names(data)
+str(data)
+summary(data)
+unique(data$CROPDMGEXP)
+unique(data$PROPDMGEXP)
+```
+  
+#### Converting the values of CROPDMG and PROPDMG into dollar amounts:
+
+According to NOAA codebook, the variables CROPDMGEXP and PROPDMGEXP adjust the dollar amounts
+in billions(B), millions (M), or thousands (K) for the columns CROPDMG and PROPDMG, respectively.  We can see that there are some characters in the CROPDMGEXP and PROPDMGEXP columns (such as -, ?, +, 0-9), which are not described in the codebook and are most probably mistakes of data entry. There are also many NAs in CROPDMGEXP and PROPDMGEXP that reflect that values in these entries of CROPDMG and PROPDMG do not need an adjustment. We will use only fields containing "B/b", "M/m" or "K/k" for the purpose of calculating dollar amounts of CROPDMG and PROPDMG. 
+
+```{r cache=TRUE}
+data[,9] <- 0
+data[,6] <- as.character(data[,6])
+
+data[grep("B|b", data$CROPDMGEXP), 9] <- 9
+data[grep("M|m", data$CROPDMGEXP), 9] <- 6
+data[grep("K|k", data$CROPDMGEXP), 9] <- 3
+data[,5] <- data$CROPDMG*(10^data[,9])
+
+data[,10] <- 0
+data[,8] <- as.character(data[,8])
+
+data[grep("B|b", data$PROPDMGEXP), 10] <- 9
+data[grep("M|m", data$PROPDMGEXP), 10] <- 6
+data[grep("K|k", data$PROPDMGEXP), 10] <- 3
+data[,7] <- data$PROPDMG*(10^data[,10])
+```
+
+Now, we can remove the columns used for adjustments:
+```{r cache=TRUE}
+data <- subset(data, select = c("BGN_DATE","EVTYPE", "INJURIES", "FATALITIES", 
+                                "CROPDMG",  "PROPDMG"))
+summary(data)
+```
+
+Since we are interested in comparing data for all types of recorded events and according to NOAA website the data for all events started to be recorded from year 1996, we will subset the dataset starting from year 1996.
+```{r cache=TRUE}
+data1996 <- mutate(data, DATE = as.Date(as.character(BGN_DATE), "%m/%d/%Y")) %>%
+            filter(DATE > as.Date("1995-12-31"))
+
+summary(data1996)
+```
+
+
+## Results.
+
+We have noticed that in NOAA codebook some very similar types of events are separated into different groups (for example,  "HEAT" and "EXCESSIVE HEAT", or "TSTM WIND", THUNDERSTORM WIND" and "THUNDERSTORM WINDS") and should probably be considered as a single category. We have not combined them into a single category, because we want to be consistent with NOAA codebook. However, we will consider the combined impact of these similar events at the final stage of our analysis.
+
+### 1. Impact on Population Health.  
+Now we will determine which types of events (as indicated in the EVTYPE variable) 
+are most harmful with respect to population health across the United States.
+The two types of variables in this dataset that are considered harmful are FATALITIES and INJURIES.    
+
+#### Subsetting and summarizing data:
+```{r cache=TRUE}
+harm <- select(data1996, EVTYPE, FATALITIES, INJURIES) %>%
+                group_by(EVTYPE) %>%
+                    summarise(fatalities = sum(FATALITIES), injuries = sum(INJURIES)) %>%
+                        arrange(desc(fatalities+injuries))
+
+harm <- harm[1:30,] # select top 30 events
+harm_tidy <- gather(harm, harm_type, count, fatalities, injuries)
+```
+  
+#### Plotting the the top 30 events:  
+```{r  fig.width=9, fig.height=8, fig.cap=c("Figure 1. The weather events which have highest impact on population health (fatalities and injuries) in USA (years 1996-2011). Top 30 most harmful events are shown.")}
+
+ggplot(harm_tidy, aes(x = reorder(EVTYPE, count), fill = harm_type)) + 
+        geom_bar(aes(y=count), stat = "identity", position = "stack") +
+        xlab("") +
+        ylab("Number of fatalities and injuries") +
+        ggtitle("The weather events with highest impact on population health") +
+        theme(axis.text.x = element_text(colour="grey20",size=12),
+              axis.text.y = element_text(colour="grey20",size=12),
+              axis.title.x = element_text(size=14, vjust = -0.2),
+              axis.title.y = element_text(size=14),
+              title = element_text(size = 14, vjust = 1.5),
+              legend.text = element_text(size=14)) +   
+        coord_flip()
+```
+
+  
+We can see from Figure 1 that the top three harmful events years 1996-2011 in USA were:  
+
+1) Tornados  
+2) Heat (Excessive Heat + Heat)
+3) Floods (Flood + Flash Flood)
+  
+### 2. Impact on Economics.  
+Now we will determine which types of events have the greatest economic consequences.
+Two variables in this dataset that reflect economic impact are property damage (PROPDMG) and crop damage (CROPDMG).
+  
+#### Subsetting and summarizing data:
+```{r cache=TRUE}
+damage <- select(data1996, EVTYPE, PROPDMG, CROPDMG) %>%
+                group_by(EVTYPE) %>%
+                    summarise(property = sum(PROPDMG), crops = sum(CROPDMG)) %>%
+                        arrange(desc(property+crops))
+
+damage <- damage[1:30,] # select top 30 events
+damage_tidy <- gather(damage, damage_type, dollars, property, crops)
+```
+  
+#### Plotting the the top 30 events:
+```{r fig.width=9, fig.height=9, fig.cap=c("Figure 2. The weather events which have highest impact on economy (crop damage and property damage) in USA (years 1996-2011). Top 20 most harmful events shown.")}
+
+ggplot(damage_tidy, aes(x = reorder(EVTYPE, dollars), fill = damage_type)) + 
+        geom_bar(aes(y=dollars/1000000000), stat = "identity", position = "stack") +
+        xlab("") +
+        ylab("Economical damage, billions of US dollars") +
+        ggtitle("The weather events with highest impact on economy") +
+        theme(axis.text.x = element_text(colour="grey20",size=12),
+              axis.text.y = element_text(colour="grey20",size=12),
+              axis.title.x = element_text(size=14, vjust = -0.2),
+              axis.title.y = element_text(size=14),
+              title = element_text(size = 14, vjust = 1.5),
+              legend.text = element_text(size=14)) +   
+        coord_flip()
+```
+
+  
+We can see from Figure 2 that the top three economically damaging events for years 1996-2011 in USA were:  
+
+1) Floods  
+2) Hurricanes/Typhoons
+3) Storm Surges 
+
+
+
+### Conclusion:
+We found that, during years 1996-2011, tornados, heat, and floods 
+were the most harmful events affecting public health. We also found that floods,
+hurricanes/typhoons, and storm surges had the biggest negative economic impact.
+
+
+#### References:
+1) https://www.ncdc.noaa.gov/stormevents/faq.jsp
+2) http://www.ncdc.noaa.gov/stormevents/pd01016005curr.pdf
+3) https://www.ncdc.noaa.gov/
+  
+
