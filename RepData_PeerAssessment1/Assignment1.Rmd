@@ -1,8 +1,8 @@
 ---
 title: "Reproducible Research, Assignment 1"
 output:
-  md_document:
-    variant: markdown_github
+   md_document
+       
 ---
 ## Introduction
 
@@ -52,7 +52,7 @@ dataset.
 
 Pakages used:
 ```{r echo=TRUE}
-suppressMessages(library(dplyr))
+suppressWarnings(suppressMessages(library(dplyr)))
 ```
 
 ### Loading and preprocessing the data:
@@ -66,7 +66,6 @@ unzip("./data/activity.zip", exdir = "./data")
 # read required data from file--------------------------------------------------
 raw_data <- read.csv("./data/activity.csv", stringsAsFactors=FALSE, header=TRUE)
 
-# Process/transform the data into a format suitable for your analysis-----------
 data <- raw_data
 
 # convert the date column to date class
@@ -76,6 +75,7 @@ data$date <- as.Date(data$date, format="%Y-%m-%d")
 ### What is mean total number of steps taken per day?
 (for this part of the assignment we will ignore the missing values in the dataset).
 ```{r echo=TRUE}
+# Process/transform the data into a format suitable for your analysis-----------
 data <- na.omit(data)
 group_data <- group_by(data, date)
 data_per_day <- summarise(group_data, steps_per_day=sum(steps))
@@ -106,6 +106,7 @@ The mean of total number of steps taken per day is: 10765
 1) Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) 
 and the average number of steps taken, averaged across all days (y-axis)
 ```{r echo=TRUE}
+# Process/transform the data into a format suitable for your analysis-----------
 group_data2 <- group_by(data, interval)
 data_interval <- summarise(group_data2, mean_steps_per_interval=mean(steps))
 ```
@@ -162,6 +163,7 @@ across days.
 new_data <- raw_data
 new_data$date <- as.Date(new_data$date, format="%Y-%m-%d")
 
+# fill missing values
 na_idx <- which(is.na(new_data$steps))
 
 for (i in na_idx){
@@ -173,9 +175,11 @@ for (i in na_idx){
 4) Make a histogram of the total number of steps taken each day 
 and Calculate and report the mean and median total number of steps taken per day.
 ```{r echo=TRUE}
+# Process/transform the data into a format suitable for your analysis-----------
 group_data3 <- group_by(new_data, date)
 new_data_per_day <- summarise(group_data3, steps_per_day=sum(steps))
 
+# Make a histogram
 with(new_data_per_day, hist(steps_per_day, breaks=20, col="red",
      main="Histogram of Total Number of Daily Steps Taken", 
      xlab="Number of Steps per Day"))
@@ -210,6 +214,7 @@ new_data_weekend <- new_data[vector_weekend,]
 averaged across all weekday days or weekend days (y-axis).
 
 ```{r echo=TRUE}
+# Process/transform the data into a format suitable for your analysis-----------
 group_data4 <- group_by(new_data_week, interval)
 new_data_week_interval <- summarise(group_data4, mean_steps_per_interval=mean(steps))
 new_data_week_interval$interval_5minutes <- seq(from = 0, to = 1435, by = 5)
@@ -218,9 +223,9 @@ group_data5 <- group_by(new_data_weekend, interval)
 new_data_weekend_interval <- summarise(group_data5, mean_steps_per_interval=mean(steps))
 new_data_weekend_interval$interval_5minutes <- seq(from = 0, to = 1435, by = 5)
 ```
-Make plot.
 ```{r echo=TRUE}
-par(mfrow = c(2, 1), mar = c(3,4,2,1))
+# Make a plot
+par(mfrow = c(2, 1), mar = c(3,4,2,2))
 
 with(new_data_week_interval, plot(interval_5minutes, mean_steps_per_interval, 
     type = "l", col='blue',
