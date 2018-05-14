@@ -1,2 +1,3 @@
-# Data-Science-Specialization-JHU
-My Projects, Data Science Specialization, John Hopkins University, Coursera
+# Data-Science-Specialization - JHU.
+
+My Projects and Assignments for Data Science Specialization, John Hopkins University, Coursera.
