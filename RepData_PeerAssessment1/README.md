@@ -1,3 +1,6 @@
+A link to view Assignment as an html page:
+https://mdorovkov.github.io/Assignment1.html
+
 ## Introduction
 
 It is now possible to collect a large amount of data about personal
