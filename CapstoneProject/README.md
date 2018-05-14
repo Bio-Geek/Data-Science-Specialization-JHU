@@ -16,3 +16,4 @@ A link to the App itself: https://mdorovkov.shinyapps.io/WordPredictApp/
 The text data used for this project is from a corpus called HC Corpora,
 which can be downloaded from:
 https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
+
